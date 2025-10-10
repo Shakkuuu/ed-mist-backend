@@ -1,0 +1,40 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:${SERVER_PORT}"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER_NAME: ${DB_USER_NAME}
+      DB_USER_PASSWORD: ${DB_USER_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      MIST_API_TOKEN: ${MIST_API_TOKEN}
+      MIST_BASE_URL: ${MIST_BASE_URL}
+      MIST_SITE_ID: ${MIST_SITE_ID}
+      SERVER_PORT: ${SERVER_PORT}
+      INTERVAL: ${INTERVAL}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${DB_USER_NAME}
+      POSTGRES_PASSWORD: ${DB_USER_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:${DB_PORT}"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
