@@ -469,10 +469,10 @@ func (h *AdminHandler) CreateLesson(c echo.Context) error {
 		SubjectID  string `json:"subject_id"`
 		RoomID     string `json:"room_id"`
 		DayOfWeek  int    `json:"day_of_week"`
-		StartTime  string `json:"start_time"`  // "09:00"
-		EndTime    string `json:"end_time"`    // "10:30"
+		StartTime  string `json:"start_time"` // "09:00"
+		EndTime    string `json:"end_time"`   // "10:30"
 		Period     int    `json:"period"`
-		DateString string `json:"date"`        // "2025-10-10" (オプション)
+		DateString string `json:"date"` // "2025-10-10" (オプション)
 	}
 
 	if err := c.Bind(&request); err != nil {
