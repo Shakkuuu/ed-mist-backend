@@ -77,6 +77,26 @@ func (s *LessonScheduler) checkAndStartMonitors() {
 
 	log.Printf("[LessonScheduler] 監視対象授業数: %d", len(lessons))
 
+	// 監視対象の授業IDのセットを作成
+	monitoringLessonIDs := make(map[string]bool)
+	for _, lesson := range lessons {
+		monitoringLessonIDs[lesson.ID] = true
+	}
+
+	// 既存の監視プロセスをチェック
+	s.activeMonitors.Range(func(key, value interface{}) bool {
+		lessonID := key.(string)
+		monitor := value.(*LessonMonitor)
+
+		// 監視対象から外れた場合は停止
+		if !monitoringLessonIDs[lessonID] {
+			log.Printf("[LessonScheduler] 監視停止: Lesson=%s", lessonID)
+			monitor.Stop()
+			s.activeMonitors.Delete(lessonID)
+		}
+		return true
+	})
+
 	for _, lesson := range lessons {
 		// すでに監視中かチェック
 		if _, exists := s.activeMonitors.Load(lesson.ID); exists {

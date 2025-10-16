@@ -124,8 +124,8 @@ func (r *LessonRepository) FindMonitoringLessons(ctx context.Context, currentTim
 		}).
 		Where("day_of_week = ?", dayOfWeek).
 		Where(
-			"(start_time <= ? AND end_time >= ?) OR (start_time >= ? AND start_time <= ?)",
-			monitorEnd, monitorStart, monitorStart, monitorEnd,
+			"start_time <= ? AND end_time >= ?",
+			monitorEnd, monitorStart,
 		).
 		Find(&lessons).Error
 
