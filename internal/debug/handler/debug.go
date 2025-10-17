@@ -15,13 +15,13 @@ import (
 
 // DebugHandler デバッグ用ハンドラー
 type DebugHandler struct {
-	orgRepo      *repository.OrganizationRepository
-	userRepo     *repository.UserRepository
-	roomRepo     *repository.RoomRepository
-	deviceRepo   *repository.DeviceRepository
-	subjectRepo  *repository.SubjectRepository
-	lessonRepo   *repository.LessonRepository
-	db           *gorm.DB
+	orgRepo     *repository.OrganizationRepository
+	userRepo    *repository.UserRepository
+	roomRepo    *repository.RoomRepository
+	deviceRepo  *repository.DeviceRepository
+	subjectRepo *repository.SubjectRepository
+	lessonRepo  *repository.LessonRepository
+	db          *gorm.DB
 }
 
 // NewDebugHandler デバッグハンドラーを作成
@@ -157,9 +157,9 @@ func (h *DebugHandler) CreateOrganization(c echo.Context) error {
 // CreateUser ユーザー作成
 func (h *DebugHandler) CreateUser(c echo.Context) error {
 	var req struct {
-		Name             string `json:"name"`
-		Email            string `json:"email"`
-		OrganizationID   string `json:"organization_id"`
+		Name           string `json:"name"`
+		Email          string `json:"email"`
+		OrganizationID string `json:"organization_id"`
 	}
 
 	if err := c.Bind(&req); err != nil {
@@ -182,10 +182,10 @@ func (h *DebugHandler) CreateUser(c echo.Context) error {
 // CreateRoom 部屋作成
 func (h *DebugHandler) CreateRoom(c echo.Context) error {
 	var req struct {
-		Name         string `json:"name"`
-		OrgRoomID    string `json:"org_room_id"`
-		Caption      string `json:"caption"`
-		MistZoneID   string `json:"mist_zone_id"`
+		Name           string `json:"name"`
+		OrgRoomID      string `json:"org_room_id"`
+		Caption        string `json:"caption"`
+		MistZoneID     string `json:"mist_zone_id"`
 		OrganizationID string `json:"organization_id"`
 	}
 

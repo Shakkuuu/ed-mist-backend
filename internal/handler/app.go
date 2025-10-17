@@ -606,3 +606,24 @@ func (h *AppHandler) GetActiveStay(c echo.Context) error {
 		"active_stay": activeStayData,
 	})
 }
+
+// GetUserStays ユーザーの滞在ログ取得
+// GET /app/stays/:user_id
+func (h *AppHandler) GetUserStays(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	userID := c.Param("user_id")
+	if userID == "" {
+		log.Printf("[GetUserStays] user_idは必須です\n")
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "user_idは必須です"})
+	}
+
+	// ユーザーの滞在ログを取得
+	stays, err := h.stayService.GetByUserID(ctx, userID)
+	if err != nil {
+		log.Printf("[GetUserStays] 滞在ログ取得エラー: %v\n", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "滞在ログの取得に失敗しました"})
+	}
+
+	return c.JSON(http.StatusOK, stays)
+}

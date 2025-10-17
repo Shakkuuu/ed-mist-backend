@@ -120,8 +120,8 @@ func Run(cfg *config.Config, dbConn *db.Connection, mistClient *mistapi.Client) 
 			// アクティブな滞在確認
 			app.GET("/stays/active", appHandler.GetActiveStay)
 
-			// 滞在ログ取得
-			app.GET("/logs/stays/:org_id/:room_id/:subject_id", appHandler.GetStayLogs)
+			// 滞在ログ取得（ユーザー向け）
+			app.GET("/stays/:user_id", appHandler.GetUserStays)
 		}
 
 		// 管理向けエンドポイント
