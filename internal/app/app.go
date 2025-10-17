@@ -129,6 +129,7 @@ func Run(cfg *config.Config, dbConn *db.Connection, mistClient *mistapi.Client) 
 		organizations := apiV1.Group("/organizations")
 		{
 			organizations.POST("", adminHandler.CreateOrganization)
+			organizations.GET("", adminHandler.GetOrganizations)
 			organizations.GET("/:org_id", adminHandler.GetOrganization)
 			organizations.DELETE("/:org_id", adminHandler.DeleteOrganization)
 		}

@@ -25,6 +25,15 @@ type CreateOrganizationRequest struct {
 	Name string `json:"org_name" validate:"required"`
 }
 
+// GetOrganizations 組織一覧取得
+func (u *OrganizationUsecase) GetOrganizations(ctx context.Context) ([]model.Organization, error) {
+	organizations, err := u.organizationService.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return organizations, nil
+}
+
 // CreateOrganization 組織を作成
 func (u *OrganizationUsecase) CreateOrganization(ctx context.Context, req *CreateOrganizationRequest) (*model.Organization, error) {
 	organization, err := u.organizationService.Create(ctx, req.Mail, req.Name)

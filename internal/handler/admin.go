@@ -41,6 +41,18 @@ func NewAdminHandler(
 	}
 }
 
+// GetOrganizations 組織一覧取得
+// GET /organizations
+func (h *AdminHandler) GetOrganizations(c echo.Context) error {
+	ctx := c.Request().Context()
+	organizations, err := h.organizationUsecase.GetOrganizations(ctx)
+	if err != nil {
+		log.Printf("[GetOrganizations] 組織一覧取得エラー: %v\n", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, organizations)
+}
+
 // CreateOrganization 組織登録
 // POST /organizations
 func (h *AdminHandler) CreateOrganization(c echo.Context) error {
