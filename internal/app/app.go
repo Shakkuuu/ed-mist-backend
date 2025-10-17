@@ -163,6 +163,7 @@ func Run(cfg *config.Config, dbConn *db.Connection, mistClient *mistapi.Client) 
 		{
 			subjects.POST("", adminHandler.CreateSubject)
 			subjects.GET("/:org_id", adminHandler.GetSubjects)
+			subjects.DELETE("/:subject_id", adminHandler.DeleteSubject)
 		}
 
 		// 授業関連

@@ -471,6 +471,25 @@ func (h *AdminHandler) GetSubjects(c echo.Context) error {
 	return c.JSON(http.StatusOK, subjects)
 }
 
+// DeleteSubject 教科削除
+// DELETE /api/v1/subjects/:subject_id
+func (h *AdminHandler) DeleteSubject(c echo.Context) error {
+	ctx := c.Request().Context()
+	subjectID := c.Param("subject_id")
+
+	if subjectID == "" {
+		log.Printf("[DeleteSubject] subject_idは必須です\n")
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "subject_idは必須です"})
+	}
+
+	if err := h.subjectService.Delete(ctx, subjectID); err != nil {
+		log.Printf("[DeleteSubject] 教科削除エラー: %v\n", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "教科の削除に失敗しました"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "教科が削除されました"})
+}
+
 // CreateLesson 授業作成
 // POST /api/v1/lessons
 func (h *AdminHandler) CreateLesson(c echo.Context) error {
