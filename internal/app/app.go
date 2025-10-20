@@ -55,7 +55,7 @@ func Run(cfg *config.Config, dbConn *db.Connection, mistClient *mistapi.Client) 
 	attendanceUsecase := usecase.NewAttendanceUsecase(lessonService, stayService, userService)
 
 	// APIハンドラーの初期化
-	appHandler := handler.NewAppHandler(appAuthUsecase, stayLogUsecase, attendanceUsecase, lessonService, deviceService, stayService)
+	appHandler := handler.NewAppHandler(appAuthUsecase, stayLogUsecase, attendanceUsecase, lessonService, deviceService, stayService, organizationService)
 	adminHandler := handler.NewAdminHandler(organizationUsecase, userUsecase, roomUsecase, stayLogUsecase, subjectService, lessonService)
 
 	e := echo.New()
@@ -93,6 +93,14 @@ func Run(cfg *config.Config, dbConn *db.Connection, mistClient *mistapi.Client) 
 	go lessonScheduler.Start()
 	log.Println("授業スケジューラーを起動しました")
 
+	// 日次バッチスケジューラーの初期化と起動
+	dailyBatchScheduler := scheduler.NewDailyBatchScheduler(
+		deviceService,
+		organizationService,
+	)
+	go dailyBatchScheduler.Start()
+	log.Println("日次バッチスケジューラーを起動しました")
+
 	// API
 	apiV1 := e.Group("/api/v1")
 	{
@@ -122,6 +130,9 @@ func Run(cfg *config.Config, dbConn *db.Connection, mistClient *mistapi.Client) 
 
 			// 滞在ログ取得（ユーザー向け）
 			app.GET("/stays/:user_id", appHandler.GetUserStays)
+
+			// デバッグ用エンドポイント
+			app.POST("/debug/daily-batch", appHandler.RunDailyBatch)
 		}
 
 		// 管理向けエンドポイント
@@ -202,6 +213,9 @@ func Run(cfg *config.Config, dbConn *db.Connection, mistClient *mistapi.Client) 
 	// スケジューラーを停止
 	log.Println("授業スケジューラーを停止しています...")
 	lessonScheduler.Stop()
+
+	log.Println("日次バッチスケジューラーを停止しています...")
+	dailyBatchScheduler.Stop()
 
 	// タイムアウト付きのcontextでシャットダウン
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

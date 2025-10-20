@@ -15,12 +15,13 @@ import (
 
 // AppHandler アプリ向けハンドラー
 type AppHandler struct {
-	authUsecase       *usecase.AppAuthUsecase
-	stayLogUsecase    *usecase.StayLogUsecase
-	attendanceUsecase *usecase.AttendanceUsecase
-	lessonService     *service.LessonService
-	deviceService     *service.DeviceService
-	stayService       *service.StayService
+	authUsecase          *usecase.AppAuthUsecase
+	stayLogUsecase       *usecase.StayLogUsecase
+	attendanceUsecase    *usecase.AttendanceUsecase
+	lessonService        *service.LessonService
+	deviceService        *service.DeviceService
+	stayService          *service.StayService
+	organizationService  *service.OrganizationService
 }
 
 // NewAppHandler アプリ向けハンドラーを作成
@@ -31,14 +32,16 @@ func NewAppHandler(
 	lessonService *service.LessonService,
 	deviceService *service.DeviceService,
 	stayService *service.StayService,
+	organizationService *service.OrganizationService,
 ) *AppHandler {
 	return &AppHandler{
-		authUsecase:       authUsecase,
-		stayLogUsecase:    stayLogUsecase,
-		attendanceUsecase: attendanceUsecase,
-		lessonService:     lessonService,
-		deviceService:     deviceService,
-		stayService:       stayService,
+		authUsecase:         authUsecase,
+		stayLogUsecase:      stayLogUsecase,
+		attendanceUsecase:   attendanceUsecase,
+		lessonService:       lessonService,
+		deviceService:       deviceService,
+		stayService:         stayService,
+		organizationService: organizationService,
 	}
 }
 
@@ -184,6 +187,70 @@ func (h *AppHandler) DeviceActivate(c echo.Context) error {
 		"success": true,
 		"device":  device,
 		"message": "認証が完了しました",
+	})
+}
+
+// RunDailyBatch 日次バッチを手動実行（デバッグ用）
+// POST /app/debug/daily-batch
+func (h *AppHandler) RunDailyBatch(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	log.Printf("[RunDailyBatch] 日次バッチを手動実行します")
+
+	// 全組織のデバイスを非アクティブ化
+	organizations, err := h.organizationService.GetAll(ctx)
+	if err != nil {
+		log.Printf("[RunDailyBatch] 組織一覧取得エラー: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "組織一覧の取得に失敗しました"})
+	}
+
+	totalDeactivated := 0
+	var results []map[string]interface{}
+
+	for _, org := range organizations {
+		// 組織の全デバイスを非アクティブ化
+		err := h.deviceService.DeactivateAllForOrg(ctx, org.ID)
+		if err != nil {
+			log.Printf("[RunDailyBatch] 組織(%s)のデバイス非アクティブ化エラー: %v", org.Name, err)
+			results = append(results, map[string]interface{}{
+				"organization": org.Name,
+				"status":       "error",
+				"error":        err.Error(),
+			})
+			continue
+		}
+
+		// 非アクティブ化されたデバイス数を取得
+		devices, err := h.deviceService.GetAll(ctx)
+		if err != nil {
+			log.Printf("[RunDailyBatch] デバイス一覧取得エラー: %v", err)
+			continue
+		}
+
+		orgDeviceCount := 0
+		for _, device := range devices {
+			if device.User.OrgID == org.ID {
+				orgDeviceCount++
+			}
+		}
+
+		results = append(results, map[string]interface{}{
+			"organization":     org.Name,
+			"status":          "success",
+			"devices_count":   orgDeviceCount,
+		})
+
+		totalDeactivated += orgDeviceCount
+		log.Printf("[RunDailyBatch] 組織(%s): %d台のデバイスを非アクティブ化", org.Name, orgDeviceCount)
+	}
+
+	log.Printf("[RunDailyBatch] 日次バッチ完了: %d台のデバイスを非アクティブ化", totalDeactivated)
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"success":            true,
+		"total_deactivated":  totalDeactivated,
+		"organizations":      results,
+		"message":            "日次バッチが完了しました",
 	})
 }
 

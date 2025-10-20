@@ -126,3 +126,15 @@ func (r *DeviceRepository) Deactivate(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+// DeactivateAllForOrg 組織の全デバイスを非アクティブにする
+func (r *DeviceRepository) DeactivateAllForOrg(ctx context.Context, orgID string) error {
+	err := r.db.WithContext(ctx).Model(&model.Device{}).
+		Joins("JOIN users ON devices.user_id = users.id").
+		Where("users.org_id = ? AND devices.is_active = ?", orgID, true).
+		Update("is_active", false).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}

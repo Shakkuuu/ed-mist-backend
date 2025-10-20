@@ -164,5 +164,11 @@ func (u *AppAuthUsecase) registerDevice(ctx context.Context, userID, deviceID st
 		return nil, err
 	}
 
-	return device, nil
+	// 新しいデバイスをアクティブ化
+	if err := u.deviceService.Activate(ctx, device.ID); err != nil {
+		return nil, err
+	}
+
+	// アクティブ化されたデバイスを再取得
+	return u.deviceService.GetByID(ctx, device.ID)
 }

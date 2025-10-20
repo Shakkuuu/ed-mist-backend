@@ -139,7 +139,5 @@ func (d *DeviceService) Deactivate(ctx context.Context, id string) error {
 
 // DeactivateAllForOrg 組織の全デバイスを非アクティブにする（日次バッチ用）
 func (d *DeviceService) DeactivateAllForOrg(ctx context.Context, orgID string) error {
-	// 実装時にはorgIDでフィルタリングするクエリが必要
-	// 今回は簡略化のため省略
-	return nil
+	return d.deviceRepo.DeactivateAllForOrg(ctx, orgID)
 }
