@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/Shakkuuu/ed-mist-backend/internal/model"
@@ -42,7 +43,7 @@ func (d *DeviceService) GetByID(ctx context.Context, id string) (*model.Device, 
 
 // GetByDeviceID デバイスIDでデバイスを取得
 func (d *DeviceService) GetByDeviceID(ctx context.Context, deviceID string) (*model.Device, error) {
-	device, err := d.deviceRepo.FindByDeviceID(ctx, deviceID)
+	device, err := d.deviceRepo.FindByDeviceID(ctx, normalizeMACAddress(deviceID))
 	if err != nil {
 		return nil, err
 	}
@@ -67,13 +68,18 @@ func (d *DeviceService) GetActiveByUserID(ctx context.Context, userID string) (*
 	return device, nil
 }
 
+// normalizeMACAddress MACアドレス形式を統一（ハイフンをコロンに変換）
+func normalizeMACAddress(mac string) string {
+	return strings.ReplaceAll(mac, "-", ":")
+}
+
 // Create デバイスを作成
 func (d *DeviceService) Create(ctx context.Context, userID, deviceID string) (*model.Device, error) {
 	now := time.Now()
 	device := &model.Device{
 		ID:                uuid.NewString(),
 		UserID:            userID,
-		DeviceID:          deviceID,
+		DeviceID:          normalizeMACAddress(deviceID), // MACアドレス形式を統一
 		IsActive:          false,
 		LastAuthenticated: now,
 		CreatedAt:         now,
@@ -111,7 +117,7 @@ func (d *DeviceService) Activate(ctx context.Context, id string) error {
 
 // ActivateWithAuthentication デバイスをアクティブにし、認証時刻を更新
 func (d *DeviceService) ActivateWithAuthentication(ctx context.Context, deviceID string) (*model.Device, error) {
-	device, err := d.deviceRepo.FindByDeviceID(ctx, deviceID)
+	device, err := d.deviceRepo.FindByDeviceID(ctx, normalizeMACAddress(deviceID))
 	if err != nil {
 		return nil, err
 	}
