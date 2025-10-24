@@ -186,6 +186,7 @@ func (h *DebugHandler) CreateRoom(c echo.Context) error {
 		OrgRoomID      string `json:"org_room_id"`
 		Caption        string `json:"caption"`
 		MistZoneID     string `json:"mist_zone_id"`
+		MapID          string `json:"map_id"`
 		OrganizationID string `json:"organization_id"`
 	}
 
@@ -200,6 +201,7 @@ func (h *DebugHandler) CreateRoom(c echo.Context) error {
 		Name:       req.Name,
 		Caption:    req.Caption,
 		MistZoneID: req.MistZoneID,
+		MapID:      req.MapID,
 	}
 
 	if err := h.roomRepo.Create(context.Background(), room); err != nil {

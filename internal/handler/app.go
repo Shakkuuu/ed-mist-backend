@@ -15,13 +15,13 @@ import (
 
 // AppHandler アプリ向けハンドラー
 type AppHandler struct {
-	authUsecase          *usecase.AppAuthUsecase
-	stayLogUsecase       *usecase.StayLogUsecase
-	attendanceUsecase    *usecase.AttendanceUsecase
-	lessonService        *service.LessonService
-	deviceService        *service.DeviceService
-	stayService          *service.StayService
-	organizationService  *service.OrganizationService
+	authUsecase         *usecase.AppAuthUsecase
+	stayLogUsecase      *usecase.StayLogUsecase
+	attendanceUsecase   *usecase.AttendanceUsecase
+	lessonService       *service.LessonService
+	deviceService       *service.DeviceService
+	stayService         *service.StayService
+	organizationService *service.OrganizationService
 }
 
 // NewAppHandler アプリ向けハンドラーを作成
@@ -235,9 +235,9 @@ func (h *AppHandler) RunDailyBatch(c echo.Context) error {
 		}
 
 		results = append(results, map[string]interface{}{
-			"organization":     org.Name,
-			"status":          "success",
-			"devices_count":   orgDeviceCount,
+			"organization":  org.Name,
+			"status":        "success",
+			"devices_count": orgDeviceCount,
 		})
 
 		totalDeactivated += orgDeviceCount
@@ -247,10 +247,10 @@ func (h *AppHandler) RunDailyBatch(c echo.Context) error {
 	log.Printf("[RunDailyBatch] 日次バッチ完了: %d台のデバイスを非アクティブ化", totalDeactivated)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"success":            true,
-		"total_deactivated":  totalDeactivated,
-		"organizations":      results,
-		"message":            "日次バッチが完了しました",
+		"success":           true,
+		"total_deactivated": totalDeactivated,
+		"organizations":     results,
+		"message":           "日次バッチが完了しました",
 	})
 }
 

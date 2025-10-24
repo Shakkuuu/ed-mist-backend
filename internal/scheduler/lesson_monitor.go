@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/Shakkuuu/ed-mist-backend/internal/model"
@@ -102,9 +103,28 @@ func (m *LessonMonitor) checkZone() {
 		return
 	}
 
+	// BLEデバイスも検知
+	var bleDevices []string
+	if room.MapID != "" {
+		bleDeviceList, err := m.scheduler.mistClient.GetZoneBLEDevices(
+			m.scheduler.mistClient.SiteID,
+			room.MistZoneID,
+			room.MapID,
+		)
+		if err != nil {
+			log.Printf("[LessonMonitor] BLEデバイス取得エラー: %v", err)
+		} else {
+			for _, bleDevice := range bleDeviceList {
+				bleDevices = append(bleDevices, bleDevice.Mac)
+			}
+		}
+	}
+
 	allDevices := append(sdkClients, wirelessClients...)
-	log.Printf("[LessonMonitor] 検知デバイス数: %d (Lesson=%s, Zone=%s)",
-		len(allDevices), m.lesson.ID, room.MistZoneID)
+	allDevices = append(allDevices, bleDevices...)
+
+	log.Printf("[LessonMonitor] 検知デバイス数: %d (WiFi/SDK: %d, BLE: %d) (Lesson=%s, Zone=%s)",
+		len(allDevices), len(sdkClients)+len(wirelessClients), len(bleDevices), m.lesson.ID, room.MistZoneID)
 
 	// 各デバイスについて処理
 	for _, deviceID := range allDevices {
@@ -112,12 +132,20 @@ func (m *LessonMonitor) checkZone() {
 	}
 }
 
+// normalizeMACAddress MACアドレス形式を統一（ハイフンをコロンに変換）
+func normalizeMACAddress(mac string) string {
+	return strings.ReplaceAll(mac, "-", ":")
+}
+
 // processDevice デバイスを処理して出席記録
 func (m *LessonMonitor) processDevice(deviceID string) {
 	ctx := context.Background()
 
+	// MACアドレス形式を統一
+	normalizedDeviceID := normalizeMACAddress(deviceID)
+
 	// デバイスIDからユーザーIDを取得
-	device, err := m.scheduler.deviceService.GetByDeviceID(ctx, deviceID)
+	device, err := m.scheduler.deviceService.GetByDeviceID(ctx, normalizedDeviceID)
 	if err != nil {
 		// デバイスが登録されていない
 		return
