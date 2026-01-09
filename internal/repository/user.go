@@ -33,6 +33,7 @@ func (r *UserRepository) FindByID(ctx context.Context, id string) (*model.User, 
 		Preload("Organization", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id", "mail", "name", "created_at", "updated_at")
 		}).
+		Preload("Devices").
 		Where("id = ?", id).
 		First(&user).Error
 	if err != nil {
@@ -51,6 +52,7 @@ func (r *UserRepository) FindByMail(ctx context.Context, mail string) (*model.Us
 		Preload("Organization", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id", "mail", "name", "created_at", "updated_at")
 		}).
+		Preload("Devices").
 		Where("mail = ?", mail).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -68,6 +70,7 @@ func (r *UserRepository) FindAllByMail(ctx context.Context, mail string) ([]mode
 		Preload("Organization", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id", "mail", "name", "created_at", "updated_at")
 		}).
+		Preload("Devices").
 		Where("mail = ?", mail).Find(&users).Error
 	return users, err
 }
@@ -79,6 +82,7 @@ func (r *UserRepository) FindByOrgIDAndMail(ctx context.Context, orgID, mail str
 		Preload("Organization", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id", "mail", "name", "created_at", "updated_at")
 		}).
+		Preload("Devices").
 		Where("org_id = ? AND mail = ?", orgID, mail).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -96,6 +100,7 @@ func (r *UserRepository) FindByOrgID(ctx context.Context, orgID string) ([]model
 		Preload("Organization", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id", "mail", "name", "created_at", "updated_at")
 		}).
+		Preload("Devices").
 		Where("org_id = ?", orgID).Find(&users).Error
 	return users, err
 }
@@ -107,6 +112,7 @@ func (r *UserRepository) FindAll(ctx context.Context) ([]model.User, error) {
 		Preload("Organization", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id", "mail", "name", "created_at", "updated_at")
 		}).
+		Preload("Devices").
 		Find(&users).Error
 	return users, err
 }

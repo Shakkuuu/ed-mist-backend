@@ -142,10 +142,10 @@ func (m *LessonMonitor) processDevice(deviceID string) {
 	ctx := context.Background()
 
 	// MACアドレス形式を統一
-	normalizedDeviceID := normalizeMACAddress(deviceID)
+	// normalizedDeviceID := normalizeMACAddress(deviceID)
 
 	// デバイスIDからユーザーIDを取得
-	device, err := m.scheduler.deviceService.GetByDeviceID(ctx, normalizedDeviceID)
+	device, err := m.scheduler.deviceService.GetByDeviceID(ctx, deviceID)
 	if err != nil {
 		// デバイスが登録されていない
 		return
